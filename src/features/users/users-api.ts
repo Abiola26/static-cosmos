@@ -21,4 +21,9 @@ export const usersApi = {
         const response = await api.delete<ApiResponse<boolean>>(`/users/${id}`);
         return response.data;
     },
+
+    getMe: async () => {
+        const response = await api.get<ApiResponse<UserResponseDto>>("/auth/me");
+        return response.data;
+    },
 };

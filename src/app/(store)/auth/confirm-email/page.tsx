@@ -1,78 +1,95 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, Suspense } from 'react';
+import { useSearchParams, useRouter } from 'next/navigation';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Loader2, MailCheck } from 'lucide-react';
 import api from '@/lib/api';
-import Link from 'next/link';
+import { toast } from 'sonner';
 
 function ConfirmEmailContent() {
     const searchParams = useSearchParams();
-    const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
-    const [message, setMessage] = useState('Confirming your email address...');
+    const router = useRouter();
+    const userId = searchParams.get('userId');
+    const [otp, setOtp] = useState('');
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
-    useEffect(() => {
-        const userId = searchParams.get('userId');
-        const token = searchParams.get('token');
-
-        if (!userId || !token) {
-            setStatus('error');
-            setMessage('Invalid confirmation link. Please check your email.');
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!userId) {
+            toast.error('Invalid link. Missing user ID.');
             return;
         }
 
-        const confirmEmail = async () => {
-            try {
-                const response = await api.get(`/Email/confirm?userId=${userId}&token=${encodeURIComponent(token)}`);
+        if (otp.length !== 6) {
+            toast.error('Please enter a valid 6-digit code.');
+            return;
+        }
 
-                if (response.data.success) {
-                    setStatus('success');
-                    setMessage('Your email has been successfully confirmed!');
-                } else {
-                    setStatus('error');
-                    setMessage(response.data.message || 'Confirmation failed.');
-                }
-            } catch (error: any) {
-                const apiMessage = error.response?.data?.message;
-                setStatus('error');
-                setMessage(apiMessage || 'An error occurred during verification.');
+        setIsSubmitting(true);
+        try {
+            const response = await api.post('/Email/confirm-otp', {
+                userId,
+                token: otp
+            });
+
+            if (response.data.success) {
+                toast.success('Your email has been successfully confirmed!');
+                router.push('/auth/login?confirmed=true');
+            } else {
+                toast.error(response.data.message || 'Confirmation failed.');
             }
-        };
-
-        confirmEmail();
-    }, [searchParams]);
+        } catch (error: any) {
+            const apiMessage = error.response?.data?.message;
+            toast.error(apiMessage || 'An error occurred during verification. Or the code is invalid.');
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
 
     return (
         <Card className="w-full max-w-md shadow-2xl border-t-4 border-primary">
             <CardHeader className="text-center space-y-2">
                 <div className="flex justify-center mb-2">
-                    {status === 'loading' && <Loader2 className="h-12 w-12 text-primary animate-spin" />}
-                    {status === 'success' && <CheckCircle2 className="h-12 w-12 text-green-500" />}
-                    {status === 'error' && <XCircle className="h-12 w-12 text-destructive" />}
+                    <MailCheck className="h-12 w-12 text-primary" />
                 </div>
                 <CardTitle className="text-2xl font-bold font-outfit">
-                    {status === 'loading' && 'Verifying Email'}
-                    {status === 'success' && 'Email Confirmed!'}
-                    {status === 'error' && 'Verification Failed'}
+                    Confirm your Email
                 </CardTitle>
                 <CardDescription>
-                    {message}
+                    We've sent a 6-digit confirmation code to your email. Please enter it below.
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                {status === 'success' && (
-                    <Button asChild className="w-full h-11 text-base font-semibold">
-                        <Link href="/auth/login">Sign In</Link>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="space-y-2">
+                        <Input
+                            placeholder="Enter 6-digit code"
+                            className="h-14 text-center text-2xl tracking-[0.5em] font-black font-outfit"
+                            value={otp}
+                            onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                            maxLength={6}
+                        />
+                    </div>
+                    <Button type="submit" disabled={isSubmitting || otp.length !== 6} className="w-full h-11 text-base font-semibold">
+                        {isSubmitting ? (
+                            <>
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                Verifying...
+                            </>
+                        ) : (
+                            'Verify'
+                        )}
                     </Button>
-                )}
-                {status === 'error' && (
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/auth/login">Back to Login</Link>
-                    </Button>
-                )}
+                </form>
             </CardContent>
+            <CardFooter className="flex justify-center">
+                <p className="text-sm text-muted-foreground text-center">
+                    Didn't receive the email? Check your spam folder.
+                </p>
+            </CardFooter>
         </Card>
     );
 }
@@ -80,7 +97,7 @@ function ConfirmEmailContent() {
 export default function ConfirmEmailPage() {
     return (
         <div className="flex min-h-[calc(100vh-12rem)] items-center justify-center p-4">
-            <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin" />}>
+            <Suspense fallback={<Loader2 className="h-12 w-12 animate-spin text-primary" />}>
                 <ConfirmEmailContent />
             </Suspense>
         </div>

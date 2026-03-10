@@ -9,7 +9,7 @@ export const ordersApi = {
 
     getUserOrders: async (pageNumber = 1, pageSize = 10) => {
         const response = await api.get<ApiResponse<PagedResult<OrderResponseDto>>>(
-            `/orders?pageNumber=${pageNumber}&pageSize=${pageSize}`
+            `/orders/my-orders?pageNumber=${pageNumber}&pageSize=${pageSize}`
         );
         return response.data;
     },

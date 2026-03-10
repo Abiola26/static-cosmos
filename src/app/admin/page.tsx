@@ -37,10 +37,10 @@ const stats = [
         description: "vs last month",
     },
     {
-        title: "Active Licenses",
-        value: "+573",
-        change: "-12.5%",
-        trend: "down",
+        title: "Books in Stock",
+        value: "1,452",
+        change: "+5.4%",
+        trend: "up",
         icon: BookOpen,
         description: "vs last month",
     },
@@ -89,14 +89,14 @@ export default function AdminDashboard() {
                         <TrendingUp className="h-24 w-24 text-primary/20" />
                     </div>
                     <h3 className="text-2xl font-black font-outfit">Sales Performance</h3>
-                    <p className="text-muted-foreground font-medium italic underline decoration-primary/10 underline-offset-4">Advanced analytics charts integration in the next iteration.</p>
+                    <p className="text-muted-foreground font-medium italic underline decoration-primary/10 underline-offset-4">Comprehensive sales reports and analytics coming soon.</p>
                 </Card>
                 <Card className="border-none shadow-xl glass-morphism p-8 min-h-[400px] flex flex-col items-center justify-center text-center space-y-4">
                     <div className="bg-primary/5 rounded-full p-12">
                         <Users className="h-24 w-24 text-primary/20" />
                     </div>
                     <h3 className="text-2xl font-black font-outfit">Audience Retention</h3>
-                    <p className="text-muted-foreground font-medium italic underline decoration-primary/10 underline-offset-4">User behavior metrics pending real-time data flow.</p>
+                    <p className="text-muted-foreground font-medium italic underline decoration-primary/10 underline-offset-4">In-depth user behavior insights will be available in the next release.</p>
                 </Card>
             </div>
         </div>

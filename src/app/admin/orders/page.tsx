@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/api";
-import { ApiResponse, OrderResponseDto } from "@/types";
+import { ApiResponse, OrderResponseDto, PagedResult } from "@/types";
 import {
     Table,
     TableBody,
@@ -15,17 +15,18 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Eye, ShoppingBag, ArrowRight } from "lucide-react";
 import { format } from "date-fns";
+import { formatPrice } from "@/lib/utils";
 
 export default function AdminOrdersPage() {
     const { data: ordersData, isLoading } = useQuery({
         queryKey: ["admin-orders"],
         queryFn: async () => {
-            const response = await api.get<ApiResponse<OrderResponseDto[]>>("/orders/admin");
+            const response = await api.get<ApiResponse<PagedResult<OrderResponseDto>>>("/orders");
             return response.data;
         }
     });
 
-    const orders = ordersData?.data || [];
+    const orders = ordersData?.data?.items || [];
 
     const getStatusColor = (status: string) => {
         switch (status.toLowerCase()) {
@@ -90,7 +91,7 @@ export default function AdminOrdersPage() {
                                     {format(new Date(order.createdAt), "PPp")}
                                 </TableCell>
                                 <TableCell className="px-8 font-black font-outfit text-lg tracking-tight text-primary">
-                                    {new Intl.NumberFormat("en-US", { style: "currency", currency: order.currency }).format(order.totalAmount)}
+                                    {formatPrice(order.totalAmount, order.currency)}
                                 </TableCell>
                                 <TableCell className="px-8">
                                     <Badge variant="outline" className={getStatusColor(order.status) + " rounded-full px-4 py-1 font-black uppercase tracking-[0.1em] text-[10px]"}>

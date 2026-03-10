@@ -16,6 +16,7 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
+    DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -44,7 +45,7 @@ export default function AdminCategoriesPage() {
         mutationFn: (name: string) => booksApi.createCategory({ name }),
         onSuccess: (response) => {
             if (response.success) {
-                toast.success("Category defined successfully!");
+                toast.success("Category created successfully.");
                 queryClient.invalidateQueries({ queryKey: ["categories"] });
                 setNewCategoryName("");
                 setIsDialogOpen(false);
@@ -107,7 +108,7 @@ export default function AdminCategoriesPage() {
                     <DialogContent className="sm:max-w-[425px] glass-morphism border-white/10 p-8">
                         <DialogHeader>
                             <DialogTitle className="text-3xl font-black font-outfit uppercase tracking-tighter">New Category</DialogTitle>
-                            <p className="text-muted-foreground italic">Add a new category to the library.</p>
+                            <DialogDescription className="text-muted-foreground italic">Add a new category to your book collection.</DialogDescription>
                         </DialogHeader>
                         <form onSubmit={handleCreate} className="space-y-6 pt-4">
                             <div className="space-y-2">
@@ -220,7 +221,7 @@ export default function AdminCategoriesPage() {
                 <DialogContent className="sm:max-w-[425px] glass-morphism border-white/10 p-8">
                     <DialogHeader>
                         <DialogTitle className="text-3xl font-black font-outfit uppercase tracking-tighter">Edit Category</DialogTitle>
-                        <p className="text-muted-foreground italic">Update category details.</p>
+                        <DialogDescription className="text-muted-foreground italic">Update category details.</DialogDescription>
                     </DialogHeader>
                     <form
                         onSubmit={(e) => {

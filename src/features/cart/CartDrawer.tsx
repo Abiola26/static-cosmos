@@ -14,6 +14,7 @@ import { ShoppingCart, ShoppingBag, ArrowRight, Trash2 } from "lucide-react";
 import { CartItemElement } from "./CartItem";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
+import { formatPrice } from "@/lib/utils";
 
 export function CartDrawer() {
     const { items, totalItems, totalPrice, clearCart } = useCartStore();
@@ -69,10 +70,7 @@ export function CartDrawer() {
                         <div className="flex items-center justify-between">
                             <span className="text-lg font-bold text-muted-foreground uppercase tracking-widest">Total</span>
                             <span className="text-3xl font-black font-outfit text-primary">
-                                {new Intl.NumberFormat("en-US", {
-                                    style: "currency",
-                                    currency: items[0]?.currency || "USD",
-                                }).format(total)}
+                                {formatPrice(total, items[0]?.currency || "USD")}
                             </span>
                         </div>
                         <Button asChild className="w-full h-16 rounded-full text-lg font-black bg-primary hover:bg-primary/90 shadow-xl group">

@@ -12,6 +12,7 @@ import {
     ChevronLeft,
     ChevronRight,
     PenLine,
+    User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -24,6 +25,7 @@ const sidebarLinks = [
     { href: "/admin/authors", label: "Authors", icon: PenLine },
     { href: "/admin/users", label: "Users", icon: Users },
     { href: "/admin/orders", label: "Orders", icon: ShoppingBag },
+    { href: "/profile", label: "My Profile", icon: User },
     { href: "/admin/settings", label: "Settings", icon: Settings },
 ];
 

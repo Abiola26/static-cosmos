@@ -87,7 +87,12 @@ export default function RegisterPage() {
                 } else {
                     // Registration success but no token (likely needs email confirmation)
                     toast.success(message, { duration: 6000 });
-                    router.push('/auth/login');
+                    const userId = resultData?.userId || resultData?.UserId;
+                    if (userId) {
+                        router.push(`/auth/confirm-email?userId=${userId}`);
+                    } else {
+                        router.push('/auth/login');
+                    }
                 }
             } else {
                 toast.error(response.data.message || 'Registration failed.');

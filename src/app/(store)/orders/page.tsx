@@ -9,6 +9,7 @@ import { ShoppingBag, Calendar, Package, ChevronRight, ArrowLeft } from "lucide-
 import { format } from "date-fns";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { formatPrice } from "@/lib/utils";
 
 export default function OrdersPage() {
     const router = useRouter();
@@ -40,7 +41,7 @@ export default function OrdersPage() {
             <header className="flex flex-col md:flex-row justify-between items-end gap-6 border-b-4 border-primary pb-8">
                 <div className="space-y-2">
                     <h1 className="text-5xl lg:text-7xl font-black font-outfit tracking-tighter uppercase">Your Orders</h1>
-                    <p className="text-xl text-muted-foreground font-medium">Tracking your literary acquisitions.</p>
+                    <p className="text-xl text-muted-foreground font-medium">View and track your previous orders.</p>
                 </div>
                 <div className="bg-primary/5 px-6 py-3 rounded-2xl border border-primary/10">
                     <p className="text-sm font-black uppercase tracking-widest text-primary">Total Orders: {orders.length}</p>
@@ -54,7 +55,7 @@ export default function OrdersPage() {
                     </div>
                     <div className="space-y-2">
                         <h2 className="text-4xl font-black font-outfit tracking-tight">No orders yet</h2>
-                        <p className="text-muted-foreground max-w-xs mx-auto text-lg">Your library is waiting to be built. Start your first journey today.</p>
+                        <p className="text-muted-foreground max-w-xs mx-auto text-lg">You haven't placed any orders yet. Start shopping to build your collection.</p>
                     </div>
                     <Button asChild className="rounded-full h-16 px-12 text-xl font-black shadow-2xl hover:scale-105 transition-all">
                         <Link href="/books">GO TO LIBRARY</Link>
@@ -90,10 +91,7 @@ export default function OrdersPage() {
                                 <div className="space-y-1 text-center md:text-right">
                                     <p className="text-[10px] font-black uppercase text-secondary-foreground/40 tracking-[0.2em]">Total Amount</p>
                                     <p className="text-3xl font-black font-outfit text-primary tracking-tighter">
-                                        {new Intl.NumberFormat("en-US", {
-                                            style: "currency",
-                                            currency: order.currency,
-                                        }).format(order.totalAmount)}
+                                        {formatPrice(order.totalAmount, order.currency)}
                                     </p>
                                 </div>
                                 <Button

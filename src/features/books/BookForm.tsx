@@ -124,8 +124,13 @@ export function BookForm({ book, onSuccess }: BookFormProps) {
                     {/* Left Column */}
                     <div className="space-y-6">
                         <div className="relative group aspect-[3/4] rounded-2xl overflow-hidden bg-muted/30 border-2 border-dashed border-white/10 hover:border-primary/50 transition-all">
-                            {previewUrl ? (
-                                <img src={previewUrl} alt="Cover Preview" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+                            {previewUrl && previewUrl !== "string" && previewUrl.length > 0 ? (
+                                <img
+                                    src={previewUrl}
+                                    alt="Cover Preview"
+                                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                                    onError={() => setPreviewUrl(null)}
+                                />
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground gap-4">
                                     <ImageIcon className="h-16 w-16 opacity-20" />
@@ -204,7 +209,7 @@ export function BookForm({ book, onSuccess }: BookFormProps) {
                                 <FormItem>
                                     <FormLabel className="text-xs font-bold text-muted-foreground uppercase tracking-widest">TITLE</FormLabel>
                                     <FormControl>
-                                        <Input placeholder="MANUSCRIPT TITLE" {...field} className="bg-white/5 border-white/10 h-12 rounded-xl text-lg font-bold" />
+                                        <Input placeholder="Book Title" {...field} className="bg-white/5 border-white/10 h-12 rounded-xl text-lg font-bold" />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -301,7 +306,7 @@ export function BookForm({ book, onSuccess }: BookFormProps) {
                                     <FormItem>
                                         <FormLabel className="text-xs font-bold text-muted-foreground uppercase tracking-widest">PUBLISHER</FormLabel>
                                         <FormControl>
-                                            <Input placeholder="House" {...field} className="bg-white/5 border-white/10 h-12 rounded-xl text-sm" />
+                                            <Input placeholder="e.g., Penguin Random House" {...field} className="bg-white/5 border-white/10 h-12 rounded-xl text-sm" />
                                         </FormControl>
                                         <FormMessage />
                                     </FormItem>

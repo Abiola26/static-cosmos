@@ -19,6 +19,15 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +53,8 @@ import { format } from "date-fns";
 export default function AdminUsersPage() {
     const queryClient = useQueryClient();
     const [searchTerm, setSearchTerm] = useState("");
+    const [selectedUser, setSelectedUser] = useState<UserResponseDto | null>(null);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
     const { data: response, isLoading } = useQuery({
         queryKey: ["admin-users"],
@@ -217,11 +228,10 @@ export default function AdminUsersPage() {
                                             </DropdownMenuItem>
                                             <DropdownMenuSeparator className="bg-white/10" />
                                             <DropdownMenuItem
-                                                className="rounded-xl p-3 font-bold gap-3 text-destructive hover:bg-destructive hover:text-white transition-all"
+                                                className="rounded-xl p-3 font-bold gap-3 text-destructive hover:bg-destructive hover:text-white transition-all cursor-pointer"
                                                 onClick={() => {
-                                                    if (confirm(`Are you sure you want to delete ${user.fullName}? This action cannot be undone.`)) {
-                                                        deleteMutation.mutate(user.id);
-                                                    }
+                                                    setSelectedUser(user);
+                                                    setIsDeleteDialogOpen(true);
                                                 }}
                                             >
                                                 <Trash2 className="h-4 w-4" />
@@ -235,6 +245,52 @@ export default function AdminUsersPage() {
                     </TableBody>
                 </Table>
             </div>
+
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-[500px] glass-morphism border-white/10 p-0 overflow-hidden">
+                    <div className="p-8 space-y-8">
+                        <DialogHeader>
+                            <DialogTitle className="text-4xl font-black font-outfit uppercase tracking-tighter text-destructive">Delete User</DialogTitle>
+                            <DialogDescription asChild className="space-y-4 text-left">
+                                <div>
+                                    <p className="text-lg font-medium text-foreground">Are you sure you want to permanently delete this account?</p>
+                                    <div className="p-6 bg-destructive/10 border border-destructive/20 rounded-3xl flex items-center gap-4 mt-3">
+                                        <div className="h-12 w-12 rounded-2xl bg-destructive/20 flex items-center justify-center font-black text-destructive font-outfit text-xl">
+                                            {selectedUser?.fullName.charAt(0)}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-black text-destructive uppercase tracking-tight truncate">{selectedUser?.fullName}</p>
+                                            <p className="text-xs text-destructive/70 font-bold truncate">{selectedUser?.email}</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground italic mt-3">This action will remove all user data and revoke all access rights immediately.</p>
+                                </div>
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex gap-4 pt-4 border-t border-white/10">
+                            <Button
+                                variant="outline"
+                                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                onClick={() => setIsDeleteDialogOpen(false)}
+                            >
+                                CANCEL
+                            </Button>
+                            <Button
+                                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/20"
+                                onClick={() => {
+                                    if (selectedUser) {
+                                        deleteMutation.mutate(selectedUser.id);
+                                        setIsDeleteDialogOpen(false);
+                                    }
+                                }}
+                                disabled={deleteMutation.isPending}
+                            >
+                                {deleteMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "DELETE NOW"}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

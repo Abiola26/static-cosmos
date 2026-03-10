@@ -8,6 +8,8 @@ import { Star, ShoppingCart, Heart, Eye } from "lucide-react";
 import { useCartStore } from "@/store/cartStore";
 import { WishlistButton } from "@/features/wishlist/WishlistButton";
 import { toast } from "sonner";
+import { useState } from "react";
+import { formatPrice, cn } from "@/lib/utils";
 
 interface BookCardProps {
     book: BookResponseDto;
@@ -15,6 +17,7 @@ interface BookCardProps {
 
 export function BookCard({ book }: BookCardProps) {
     const addItem = useCartStore((state) => state.addItem);
+    const [imgError, setImgError] = useState(false);
 
     const handleAddToCart = (e: React.MouseEvent) => {
         e.preventDefault();
@@ -32,28 +35,19 @@ export function BookCard({ book }: BookCardProps) {
         }
     };
 
-    const formatPrice = (price: number, currency: string) => {
-        try {
-            return new Intl.NumberFormat("en-US", {
-                style: "currency",
-                currency: currency,
-            }).format(price);
-        } catch {
-            // Fallback for non-standard currency codes like USDT
-            return `${currency} ${price.toFixed(2)}`;
-        }
-    };
+
 
     return (
         <Card className="group overflow-hidden transition-all duration-500 hover:shadow-[0_20px_50px_rgba(0,0,0,0.2)] border-none bg-card/50 backdrop-blur-md ring-1 ring-white/10 h-full flex flex-col">
             <CardHeader className="p-0 relative aspect-[3/4] overflow-hidden">
-                {isValidUrl(book.coverImageUrl) ? (
+                {isValidUrl(book.coverImageUrl) && !imgError ? (
                     <Image
                         src={book.coverImageUrl!}
                         alt={book.title}
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        onError={() => setImgError(true)}
                     />
                 ) : (
                     <div className="w-full h-full bg-muted flex items-center justify-center">
@@ -99,10 +93,22 @@ export function BookCard({ book }: BookCardProps) {
                 <Button
                     size="sm"
                     onClick={handleAddToCart}
-                    className="rounded-full bg-primary hover:bg-primary/90 font-black px-5 shadow-lg shadow-primary/20 active:scale-95 transition-all"
+                    disabled={book.totalQuantity <= 0}
+                    className={cn(
+                        "rounded-full font-black px-5 shadow-lg transition-all active:scale-95",
+                        book.totalQuantity > 0
+                            ? "bg-primary hover:bg-primary/90 shadow-primary/20"
+                            : "bg-muted text-muted-foreground cursor-not-allowed"
+                    )}
                 >
-                    <ShoppingCart className="h-4 w-4 mr-2" />
-                    ADD
+                    {book.totalQuantity > 0 ? (
+                        <>
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            ADD
+                        </>
+                    ) : (
+                        "OUT OF STOCK"
+                    )}
                 </Button>
             </CardFooter>
         </Card>

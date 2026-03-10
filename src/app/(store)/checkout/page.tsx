@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { BookOpen, CreditCard, ShieldCheck, Loader2, CheckCircle2 } from "lucide-react";
 import { toast } from "sonner";
 import { useSession } from "next-auth/react";
+import { formatPrice } from "@/lib/utils";
 
 export default function CheckoutPage() {
     const { items, totalPrice, clearCart } = useCartStore();
@@ -141,10 +142,7 @@ export default function CheckoutPage() {
                                         <p className="text-[10px] font-black text-muted-foreground uppercase">Qty: {item.quantity}</p>
                                     </div>
                                     <span className="font-black text-sm whitespace-nowrap">
-                                        {new Intl.NumberFormat("en-US", {
-                                            style: "currency",
-                                            currency: item.currency,
-                                        }).format(item.subTotal)}
+                                        {formatPrice(item.subTotal, item.currency)}
                                     </span>
                                 </div>
                             ))}
@@ -155,7 +153,7 @@ export default function CheckoutPage() {
                         <div className="space-y-4">
                             <div className="flex justify-between items-center text-muted-foreground font-bold">
                                 <span>Subtotal</span>
-                                <span>{new Intl.NumberFormat("en-US", { style: "currency", currency: items[0]?.currency || "USD" }).format(total)}</span>
+                                <span>{formatPrice(total, items[0]?.currency || "USD")}</span>
                             </div>
                             <div className="flex justify-between items-center text-muted-foreground font-bold">
                                 <span>Shipping</span>
@@ -164,10 +162,7 @@ export default function CheckoutPage() {
                             <div className="flex justify-between items-center pt-4 border-t-2 border-primary border-dashed">
                                 <span className="text-2xl font-black font-outfit tracking-tight">TOTAL</span>
                                 <span className="text-4xl font-black font-outfit text-primary tracking-tighter">
-                                    {new Intl.NumberFormat("en-US", {
-                                        style: "currency",
-                                        currency: items[0]?.currency || "USD",
-                                    }).format(total)}
+                                    {formatPrice(total, items[0]?.currency || "USD")}
                                 </span>
                             </div>
                         </div>

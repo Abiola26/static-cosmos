@@ -6,6 +6,7 @@ import { booksApi } from "./books-api";
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -75,7 +76,9 @@ export function BulkUploadDialog() {
                 <div className="p-8 space-y-8">
                     <DialogHeader>
                         <DialogTitle className="text-4xl font-black font-outfit uppercase tracking-tighter">Bulk Upload</DialogTitle>
-                        <p className="text-muted-foreground">Upload a CSV file containing multiple book records.</p>
+                        <DialogDescription className="text-muted-foreground">
+                            Upload a CSV file containing multiple book records.
+                        </DialogDescription>
                     </DialogHeader>
 
                     <div

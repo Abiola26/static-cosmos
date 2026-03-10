@@ -4,7 +4,7 @@ import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { signIn } from 'next-auth/react';
+import { signIn, getSession } from 'next-auth/react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
@@ -81,7 +81,15 @@ function LoginForm() {
                 toast.error(msg, { duration: 5000 });
             } else {
                 toast.success('Login successful!');
-                router.push('/');
+
+                // Fetch the updated session to determine the user's role
+                const session = await getSession();
+
+                if (session?.user?.role === 'Admin') {
+                    router.push('/admin');
+                } else {
+                    router.push('/');
+                }
                 router.refresh();
             }
         } catch (error) {
@@ -121,7 +129,15 @@ function LoginForm() {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <div className="flex items-center justify-between">
+                                            <FormLabel>Password</FormLabel>
+                                            <Link
+                                                href="/auth/forgot-password"
+                                                className="text-sm font-medium text-primary hover:underline hover:text-primary/90 transition-colors"
+                                            >
+                                                Forgot password?
+                                            </Link>
+                                        </div>
                                         <FormControl>
                                             <Input type="password" placeholder="••••••••" {...field} />
                                         </FormControl>

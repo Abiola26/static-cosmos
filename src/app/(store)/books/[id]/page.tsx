@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { booksApi } from "@/features/books/books-api";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,11 +15,13 @@ import { ReviewList } from "@/features/reviews/ReviewList";
 import { ReviewForm } from "@/features/reviews/ReviewForm";
 import { useCartStore } from "@/store/cartStore";
 import { WishlistButton } from "@/features/wishlist/WishlistButton";
+import { formatPrice, cn } from "@/lib/utils";
 
 export default function BookDetailPage() {
     const { id } = useParams();
     const router = useRouter();
     const addItem = useCartStore((state) => state.addItem);
+    const [imgError, setImgError] = useState(false);
 
     const { data: bookData, isLoading } = useQuery({
         queryKey: ["book", id],
@@ -80,13 +83,14 @@ export default function BookDetailPage() {
                 {/* Cover Image */}
                 <div className="w-full lg:w-[450px] lg:sticky lg:top-24">
                     <div className="relative aspect-[3/4] rounded-3xl overflow-hidden shadow-[0_20px_50px_rgba(0,0,0,0.3)] group border border-white/10 ring-1 ring-black/5">
-                        {book.coverImageUrl ? (
+                        {book.coverImageUrl && book.coverImageUrl !== "string" && !imgError ? (
                             <Image
                                 src={book.coverImageUrl}
                                 alt={book.title}
                                 fill
                                 className="object-cover group-hover:scale-105 transition-transform duration-700"
                                 priority
+                                onError={() => setImgError(true)}
                             />
                         ) : (
                             <div className="w-full h-full bg-muted flex flex-col items-center justify-center text-center p-8">
@@ -101,8 +105,11 @@ export default function BookDetailPage() {
                 {/* Content */}
                 <div className="flex-1 space-y-10">
                     <div className="space-y-4">
-                        <Badge className="bg-primary/20 text-primary hover:bg-primary/30 border-none px-4 py-1.5 text-xs font-black uppercase tracking-widest">
-                            {book.categoryName}
+                        <Badge className={cn(
+                            "border-none px-4 py-1.5 text-xs font-black uppercase tracking-widest",
+                            book.totalQuantity > 0 ? "bg-primary/20 text-primary hover:bg-primary/30" : "bg-destructive text-white"
+                        )}>
+                            {book.totalQuantity > 0 ? book.categoryName : "OUT OF STOCK"}
                         </Badge>
                         <h1 className="text-4xl md:text-5xl lg:text-7xl font-black font-outfit tracking-tighter leading-[0.9] text-balance">
                             {book.title}
@@ -119,16 +126,10 @@ export default function BookDetailPage() {
 
                     <div className="flex flex-wrap gap-4 items-baseline">
                         <span className="text-6xl font-black font-outfit text-primary tracking-tighter">
-                            {new Intl.NumberFormat("en-US", {
-                                style: "currency",
-                                currency: book.currency,
-                            }).format(book.price)}
+                            {formatPrice(book.price, book.currency)}
                         </span>
                         <span className="text-2xl font-bold text-muted-foreground/40 line-through decoration-destructive/30 decoration-4">
-                            {new Intl.NumberFormat("en-US", {
-                                style: "currency",
-                                currency: book.currency,
-                            }).format(book.price * 1.5)}
+                            {formatPrice(book.price * 1.5, book.currency)}
                         </span>
                     </div>
 
@@ -162,10 +163,22 @@ export default function BookDetailPage() {
                         <Button
                             size="lg"
                             onClick={handleAddToCart}
-                            className="flex-1 rounded-full h-20 text-xl font-black shadow-[0_15px_30px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_20px_40px_rgba(var(--primary-rgb),0.4)] transition-all active:scale-95 bg-primary hover:bg-primary/90"
+                            disabled={book.totalQuantity <= 0}
+                            className={cn(
+                                "flex-1 rounded-full h-20 text-xl font-black transition-all active:scale-95",
+                                book.totalQuantity > 0
+                                    ? "bg-primary hover:bg-primary/90 shadow-[0_15px_30px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_20px_40px_rgba(var(--primary-rgb),0.4)]"
+                                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                            )}
                         >
-                            <ShoppingCart className="mr-3 h-6 w-6" />
-                            ADD TO CART
+                            {book.totalQuantity > 0 ? (
+                                <>
+                                    <ShoppingCart className="mr-3 h-6 w-6" />
+                                    ADD TO CART
+                                </>
+                            ) : (
+                                "OUT OF STOCK"
+                            )}
                         </Button>
                         <WishlistButton book={book} variant="full" />
                         <Button size="lg" variant="outline" className="rounded-full h-20 w-full sm:w-20 p-0 border-2 transition-all hover:bg-primary/10 hover:text-primary">

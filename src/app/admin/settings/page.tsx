@@ -34,16 +34,16 @@ export default function AdminSettingsPage() {
                     <CardContent className="p-8 space-y-6">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">Store Name</Label>
-                            <Input defaultValue="STATIC COSMOS NODE 01" className="h-14 rounded-2xl border-white/10 glass-morphism shadow-inner" />
+                            <Input defaultValue="Static Cosmos Bookstore" className="h-14 rounded-2xl border-white/10 glass-morphism shadow-inner" />
                         </div>
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-muted-foreground ml-1">API URL</Label>
-                            <Input defaultValue="https://api.static-cosmos.io" className="h-14 rounded-2xl border-white/10 glass-morphism shadow-inner" />
+                            <Input defaultValue="https://api.bookstore.com" className="h-14 rounded-2xl border-white/10 glass-morphism shadow-inner" />
                         </div>
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-white/10">
                             <div className="space-y-1">
                                 <p className="font-black uppercase tracking-tight">Public Registration</p>
-                                <p className="text-xs text-muted-foreground font-medium">Allow new users to join the network.</p>
+                                <p className="text-xs text-muted-foreground font-medium">Allow new account registrations.</p>
                             </div>
                             <Switch defaultChecked />
                         </div>
@@ -56,21 +56,21 @@ export default function AdminSettingsPage() {
                             <div className="bg-primary p-3 rounded-2xl">
                                 <Shield className="h-6 w-6 text-white" />
                             </div>
-                            <CardTitle className="text-2xl font-black font-outfit uppercase">Security</CardTitle>
+                            <CardTitle className="text-2xl font-black font-outfit uppercase">Security Settings</CardTitle>
                         </div>
                     </CardHeader>
                     <CardContent className="p-8 space-y-6">
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-white/10">
                             <div className="space-y-1">
                                 <p className="font-black uppercase tracking-tight">Multi-Factor Auth</p>
-                                <p className="text-xs text-muted-foreground font-medium">Enforce authentication codes or hardware verification.</p>
+                                <p className="text-xs text-muted-foreground font-medium">Require multi-factor authentication for sensitive actions.</p>
                             </div>
                             <Switch defaultChecked />
                         </div>
                         <div className="flex items-center justify-between p-4 rounded-2xl bg-muted/20 border border-white/10">
                             <div className="space-y-1">
                                 <p className="font-black uppercase tracking-tight">Session Encryption</p>
-                                <p className="text-xs text-muted-foreground font-medium">Enhanced encryption for all dashboard traffic.</p>
+                                <p className="text-xs text-muted-foreground font-medium">Enable end-to-end encryption for all sessions.</p>
                             </div>
                             <Switch defaultChecked />
                         </div>

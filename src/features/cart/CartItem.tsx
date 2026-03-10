@@ -3,6 +3,7 @@
 import { useCartStore } from "@/store/cartStore";
 import { Button } from "@/components/ui/button";
 import { Minus, Plus, Trash2 } from "lucide-react";
+import { formatPrice } from "@/lib/utils";
 
 interface CartItemProps {
     item: any; // We'll use the type from cartStore
@@ -37,10 +38,7 @@ export function CartItemElement({ item }: { item: any }) {
                         </Button>
                     </div>
                     <span className="font-black font-outfit text-primary">
-                        {new Intl.NumberFormat("en-US", {
-                            style: "currency",
-                            currency: item.currency,
-                        }).format(item.subTotal)}
+                        {formatPrice(item.subTotal, item.currency)}
                     </span>
                 </div>
             </div>

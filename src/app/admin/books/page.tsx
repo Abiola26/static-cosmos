@@ -16,6 +16,7 @@ import {
 import {
     Dialog,
     DialogContent,
+    DialogDescription,
     DialogHeader,
     DialogTitle,
     DialogTrigger,
@@ -38,7 +39,29 @@ import {
 import { toast } from "sonner";
 import Image from "next/image";
 import { BookResponseDto, PagedResult } from "@/types";
-import { cn } from "@/lib/utils";
+import { cn, formatPrice } from "@/lib/utils";
+
+function BookCover({ src, alt }: { src: string | null | undefined, alt: string }) {
+    const [error, setError] = useState(false);
+
+    return (
+        <div className="relative h-16 w-12 rounded-lg overflow-hidden border border-white/20 shadow-lg group-hover:scale-110 transition-transform">
+            {src && src !== "string" && !error ? (
+                <Image
+                    src={src}
+                    alt={alt}
+                    fill
+                    className="object-cover"
+                    onError={() => setError(true)}
+                />
+            ) : (
+                <div className="h-full w-full bg-muted flex items-center justify-center">
+                    <ImageIcon className="h-4 w-4 text-muted-foreground" />
+                </div>
+            )}
+        </div>
+    );
+}
 
 export default function AdminBooksPage() {
     const queryClient = useQueryClient();
@@ -46,6 +69,7 @@ export default function AdminBooksPage() {
     const [page, setPage] = useState(1);
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
     const [selectedBook, setSelectedBook] = useState<BookResponseDto | null>(null);
 
     const { data: booksData, isLoading } = useQuery({
@@ -63,14 +87,23 @@ export default function AdminBooksPage() {
         onSuccess: (response) => {
             if (response.success) {
                 toast.success("Book deleted successfully.");
-                queryClient.invalidateQueries({ queryKey: ["admin-books"] });
-                queryClient.invalidateQueries({ queryKey: ["categories"] });
             } else {
                 toast.error(response.message || "Failed to delete book.");
             }
         },
         onError: (error: any) => {
-            toast.error(error.response?.data?.message || "Error deleting book.");
+            // If 404, it might already be deleted, which is technically what we wanted
+            if (error.response?.status === 404) {
+                toast.success("Book removed successfully.");
+            } else {
+                toast.error(error.response?.data?.message || "Error deleting book.");
+            }
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({ queryKey: ["admin-books"] });
+            queryClient.invalidateQueries({ queryKey: ["categories"] });
+            setIsDeleteDialogOpen(false);
+            setSelectedBook(null);
         }
     });
 
@@ -102,7 +135,7 @@ export default function AdminBooksPage() {
                             <div className="p-8 space-y-8">
                                 <DialogHeader>
                                     <DialogTitle className="text-4xl font-black font-outfit uppercase tracking-tighter">ADD BOOK</DialogTitle>
-                                    <p className="text-muted-foreground">Fill in the details for the new addition to the library.</p>
+                                    <DialogDescription className="text-muted-foreground">Enter the details for the new book addition.</DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
                                     <BookForm onSuccess={() => setIsAddDialogOpen(false)} />
@@ -171,15 +204,7 @@ export default function AdminBooksPage() {
                         ) : books.map((book: BookResponseDto) => (
                             <TableRow key={book.id} className="group hover:bg-primary/5 transition-colors h-28 border-white/5">
                                 <TableCell className="px-8">
-                                    <div className="relative h-16 w-12 rounded-lg overflow-hidden border border-white/20 shadow-lg group-hover:scale-110 transition-transform">
-                                        {book.coverImageUrl ? (
-                                            <Image src={book.coverImageUrl} alt={book.title} fill className="object-cover" />
-                                        ) : (
-                                            <div className="h-full w-full bg-muted flex items-center justify-center">
-                                                <ImageIcon className="h-4 w-4 text-muted-foreground" />
-                                            </div>
-                                        )}
-                                    </div>
+                                    <BookCover src={book.coverImageUrl} alt={book.title} />
                                 </TableCell>
                                 <TableCell className="px-8">
                                     <div className="space-y-1">
@@ -198,15 +223,23 @@ export default function AdminBooksPage() {
                                 </TableCell>
                                 <TableCell className="px-8 font-black tabular-nums whitespace-nowrap">
                                     <div className="flex items-center gap-3">
-                                        <span className={cn(
-                                            "h-2 w-2 rounded-full",
-                                            book.totalQuantity > 10 ? "bg-green-500" : "bg-destructive animate-pulse"
-                                        )} />
-                                        {book.totalQuantity} in stock
+                                        {book.totalQuantity > 0 ? (
+                                            <>
+                                                <span className={cn(
+                                                    "h-2 w-2 rounded-full",
+                                                    book.totalQuantity > 10 ? "bg-green-500" : "bg-yellow-500 animate-pulse"
+                                                )} />
+                                                {book.totalQuantity} in stock
+                                            </>
+                                        ) : (
+                                            <span className="text-destructive font-black uppercase tracking-tighter animate-pulse">
+                                                OUT OF STOCK
+                                            </span>
+                                        )}
                                     </div>
                                 </TableCell>
                                 <TableCell className="px-8 text-right font-black font-outfit text-xl tracking-tighter text-primary">
-                                    {new Intl.NumberFormat("en-US", { style: "currency", currency: book.currency }).format(book.price)}
+                                    {formatPrice(book.price, book.currency)}
                                 </TableCell>
                                 <TableCell className="px-8 text-right">
                                     <div className="flex items-center justify-end gap-2">
@@ -226,9 +259,8 @@ export default function AdminBooksPage() {
                                             size="icon"
                                             className="h-12 w-12 rounded-xl hover:bg-destructive/10 text-destructive hover:bg-destructive hover:text-white transition-all"
                                             onClick={() => {
-                                                if (confirm(`Are you sure you want to delete "${book.title}"? This action cannot be undone.`)) {
-                                                    deleteMutation.mutate(book.id);
-                                                }
+                                                setSelectedBook(book);
+                                                setIsDeleteDialogOpen(true);
                                             }}
                                             disabled={deleteMutation.isPending}
                                         >
@@ -266,10 +298,48 @@ export default function AdminBooksPage() {
                     <div className="p-8 space-y-8">
                         <DialogHeader>
                             <DialogTitle className="text-4xl font-black font-outfit uppercase tracking-tighter">EDIT BOOK</DialogTitle>
-                            <p className="text-muted-foreground italic font-medium">Editing details for: <span className="text-primary font-black uppercase tracking-tight">{selectedBook?.title}</span></p>
+                            <DialogDescription className="text-muted-foreground italic font-medium">
+                                Editing details for: <span className="text-primary font-black uppercase tracking-tight">{selectedBook?.title}</span>
+                            </DialogDescription>
                         </DialogHeader>
                         <div className="space-y-4 max-h-[70vh] overflow-y-auto px-1">
                             {selectedBook && <BookForm book={selectedBook as BookResponseDto} onSuccess={() => setIsEditDialogOpen(false)} />}
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
+
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-[500px] glass-morphism border-white/10 p-0 overflow-hidden">
+                    <div className="p-8 space-y-8">
+                        <DialogHeader>
+                            <DialogTitle className="text-4xl font-black font-outfit uppercase tracking-tighter text-destructive">Delete Confirmation</DialogTitle>
+                            <DialogDescription asChild className="space-y-2 text-left">
+                                <div>
+                                    <p className="text-lg font-medium text-foreground">Are you absolutely sure you want to delete this book?</p>
+                                    <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-2xl mt-2">
+                                        <p className="font-black text-destructive uppercase tracking-tight">{selectedBook?.title}</p>
+                                        <p className="text-xs text-destructive/70 font-bold">ISBN: {selectedBook?.isbn}</p>
+                                    </div>
+                                    <p className="text-sm text-muted-foreground italic mt-2">This action is irreversible and will permanently delete the book record.</p>
+                                </div>
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex gap-4 pt-4 border-t border-white/10">
+                            <Button
+                                variant="outline"
+                                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                onClick={() => setIsDeleteDialogOpen(false)}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-white"
+                                onClick={() => selectedBook && deleteMutation.mutate(selectedBook.id)}
+                                disabled={deleteMutation.isPending}
+                            >
+                                {deleteMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "DELETE NOW"}
+                            </Button>
                         </div>
                     </div>
                 </DialogContent>
