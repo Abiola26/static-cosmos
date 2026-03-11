@@ -18,4 +18,26 @@ export const ordersApi = {
         const response = await api.get<ApiResponse<OrderResponseDto>>(`/orders/${id}`);
         return response.data;
     },
+
+    verifyPayment: async (id: string, reference: string) => {
+        const response = await api.post<ApiResponse<OrderResponseDto>>(
+            `/orders/${id}/verify-payment?reference=${reference}`
+        );
+        return response.data;
+    },
+
+    getAllOrders: async (pageNumber = 1, pageSize = 10) => {
+        const response = await api.get<ApiResponse<PagedResult<OrderResponseDto>>>(
+            `/orders?pageNumber=${pageNumber}&pageSize=${pageSize}`
+        );
+        return response.data;
+    },
+
+    updateOrderStatus: async (id: string, status: string) => {
+        const response = await api.patch<ApiResponse<OrderResponseDto>>(
+            `/orders/${id}/status`,
+            { status }
+        );
+        return response.data;
+    },
 };

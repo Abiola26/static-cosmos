@@ -15,11 +15,26 @@ import { CartItemElement } from "./CartItem";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { formatPrice } from "@/lib/utils";
+import { useEffect, useState } from "react";
 
 export function CartDrawer() {
+    const [mounted, setMounted] = useState(false);
+    
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
     const { items, totalItems, totalPrice, clearCart } = useCartStore();
     const count = totalItems();
     const total = totalPrice();
+
+    if (!mounted) {
+        return (
+            <Button variant="ghost" size="icon" className="relative h-12 w-12 rounded-full hover:bg-primary/10 group transition-all">
+                <ShoppingCart className="h-6 w-6 group-hover:scale-110 transition-transform" />
+            </Button>
+        );
+    }
 
     return (
         <Sheet>

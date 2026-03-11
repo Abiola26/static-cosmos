@@ -13,9 +13,10 @@ import { formatPrice, cn } from "@/lib/utils";
 
 interface BookCardProps {
     book: BookResponseDto;
+    priority?: boolean;
 }
 
-export function BookCard({ book }: BookCardProps) {
+export function BookCard({ book, priority = false }: BookCardProps) {
     const addItem = useCartStore((state) => state.addItem);
     const [imgError, setImgError] = useState(false);
 
@@ -47,6 +48,7 @@ export function BookCard({ book }: BookCardProps) {
                         fill
                         className="object-cover transition-transform duration-700 group-hover:scale-110"
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                        priority={priority}
                         onError={() => setImgError(true)}
                     />
                 ) : (

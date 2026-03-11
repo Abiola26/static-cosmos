@@ -95,11 +95,14 @@ export default function OrdersPage() {
                                     </p>
                                 </div>
                                 <Button
+                                    asChild
                                     variant="ghost"
                                     size="icon"
                                     className="h-14 w-14 rounded-2xl bg-muted/50 hover:bg-primary hover:text-white transition-all group-hover:translate-x-1"
                                 >
-                                    <ChevronRight className="h-8 w-8" />
+                                    <Link href={`/orders/${order.id}`}>
+                                        <ChevronRight className="h-8 w-8" />
+                                    </Link>
                                 </Button>
                             </div>
                         </div>

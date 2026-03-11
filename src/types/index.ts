@@ -203,6 +203,11 @@ export interface OrderResponseDto {
     userId: string;
     userFullName: string;
     totalAmount: number;
+    shippingFee: number;
+    shippingAddress: string;
+    paymentMethod: string;
+    paymentReference?: string;
+    isPaid: boolean;
     currency: string;
     status: string;
     items: OrderItemResponseDto[];
@@ -212,6 +217,8 @@ export interface OrderResponseDto {
 
 export interface OrderCreateDto {
     items: { bookId: string; quantity: number }[];
+    shippingAddress: string;
+    paymentMethod: string;
 }
 
 export interface OrderUpdateStatusDto {

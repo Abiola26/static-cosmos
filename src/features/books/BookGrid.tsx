@@ -38,8 +38,8 @@ export function BookGrid({ books, isLoading }: BookGridProps) {
 
     return (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 animate-in fade-in duration-500">
-            {books.map((book) => (
-                <BookCard key={book.id} book={book} />
+            {books.map((book, index) => (
+                <BookCard key={book.id} book={book} priority={index < 4} />
             ))}
         </div>
     );

@@ -7,9 +7,11 @@ export default function StoreLayout({
 }) {
     return (
         <div className="relative flex min-h-screen flex-col">
-            <Header />
+            <div className="print:hidden">
+                <Header />
+            </div>
             <main className="flex-1">{children}</main>
-            <footer className="border-t border-white/10 bg-muted/30 py-12">
+            <footer className="border-t border-white/10 bg-muted/30 py-12 print:hidden">
                 <div className="container mx-auto px-4 text-center">
                     <p className="font-outfit font-black text-2xl tracking-tighter uppercase mb-2">StaticCosmos</p>
                     <p className="text-sm text-muted-foreground font-medium">© 2026 StaticCosmos Bookstore. Built with excellence.</p>
