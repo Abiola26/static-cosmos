@@ -7,51 +7,77 @@ import {
     ShoppingBag,
     TrendingUp,
     ArrowUpRight,
-    ArrowDownRight
+    ArrowDownRight,
+    Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const stats = [
-    {
-        title: "Total Revenue",
-        value: "$45,231.89",
-        change: "+20.1%",
-        trend: "up",
-        icon: TrendingUp,
-        description: "vs last month",
-    },
-    {
-        title: "Active Users",
-        value: "2,350",
-        change: "+180.1%",
-        trend: "up",
-        icon: Users,
-        description: "vs last month",
-    },
-    {
-        title: "Books Sold",
-        value: "12,234",
-        change: "+19%",
-        trend: "up",
-        icon: ShoppingBag,
-        description: "vs last month",
-    },
-    {
-        title: "Books in Stock",
-        value: "1,452",
-        change: "+5.4%",
-        trend: "up",
-        icon: BookOpen,
-        description: "vs last month",
-    },
-];
+import { useQuery } from "@tanstack/react-query";
+import { reportService } from "@/lib/api-reports";
 
 export default function AdminDashboard() {
+    const { data: dashboardData, isLoading, error } = useQuery({
+        queryKey: ["admin-dashboard"],
+        queryFn: () => reportService.getDashboardReport(),
+    });
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+            </div>
+        );
+    }
+
+    if (error || !dashboardData?.success) {
+        return (
+            <div className="text-center p-8 bg-destructive/10 text-destructive rounded-xl">
+                Failed to load dashboard data.
+            </div>
+        );
+    }
+
+    const report = dashboardData.data!;
+
+    const stats = [
+        {
+            title: "Total Revenue",
+            value: `$${report.totalRevenue.toLocaleString()}`,
+            change: "+12.5%", // These could be calculated if backend provides previous period
+            trend: "up",
+            icon: TrendingUp,
+            description: "Total earnings",
+        },
+        {
+            title: "Active Users",
+            value: report.totalUsers.toLocaleString(),
+            change: "+180.1%",
+            trend: "up",
+            icon: Users,
+            description: "Registered customers",
+        },
+        {
+            title: "Orders Placed",
+            value: report.totalOrders.toLocaleString(),
+            change: "+19%",
+            trend: "up",
+            icon: ShoppingBag,
+            description: "Total volume",
+        },
+        {
+            title: "Books in Database",
+            value: report.totalBooks.toLocaleString(),
+            change: "+5.4%",
+            trend: "up",
+            icon: BookOpen,
+            description: "Catalog size",
+        },
+    ];
+
     return (
         <div className="space-y-12 animate-in fade-in slide-in-from-bottom-4 duration-700">
             <header className="space-y-2 border-b-4 border-primary pb-8">
                 <h1 className="text-5xl lg:text-7xl font-black font-outfit tracking-tighter uppercase">Overview</h1>
-                <p className="text-xl text-muted-foreground font-medium italic underline decoration-primary/30 underline-offset-8 decoration-2">Business metrics at a glance.</p>
+                <p className="text-xl text-muted-foreground font-medium italic underline decoration-primary/30 underline-offset-8 decoration-2">Real-time business metrics.</p>
             </header>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -83,20 +109,60 @@ export default function AdminDashboard() {
                 ))}
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                <Card className="border-none shadow-xl glass-morphism p-8 min-h-[400px] flex flex-col items-center justify-center text-center space-y-4">
-                    <div className="bg-primary/5 rounded-full p-12">
-                        <TrendingUp className="h-24 w-24 text-primary/20" />
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <Card className="lg:col-span-2 border-none shadow-xl glass-morphism p-8 min-h-[400px] flex flex-col space-y-6">
+                    <h3 className="text-2xl font-black font-outfit uppercase tracking-tight">Recent Sales</h3>
+                    <div className="overflow-x-auto">
+                        <table className="w-full text-left">
+                            <thead>
+                                <tr className="text-xs font-black uppercase text-muted-foreground/50 border-b border-white/10">
+                                    <th className="pb-4">Customer</th>
+                                    <th className="pb-4">Amount</th>
+                                    <th className="pb-4 text-center">Status</th>
+                                    <th className="pb-4 text-right">Date</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-white/5">
+                                {report.recentSales.map((sale) => (
+                                    <tr key={sale.orderId} className="group transition-colors hover:bg-white/5">
+                                        <td className="py-4 font-bold">{sale.customerName}</td>
+                                        <td className="py-4 font-black text-primary">${sale.amount.toFixed(2)}</td>
+                                        <td className="py-4 text-center">
+                                            <span className={cn(
+                                                "text-[10px] font-black uppercase px-2 py-1 rounded-full",
+                                                sale.status === "Completed" ? "bg-green-500/10 text-green-600 border border-green-500/20" :
+                                                sale.status === "Pending" ? "bg-yellow-500/10 text-yellow-600 border border-yellow-500/20" :
+                                                "bg-muted text-muted-foreground border border-white/10"
+                                            )}>
+                                                {sale.status}
+                                            </span>
+                                        </td>
+                                        <td className="py-4 text-right text-xs font-bold text-muted-foreground">
+                                            {new Date(sale.date).toLocaleDateString()}
+                                        </td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
                     </div>
-                    <h3 className="text-2xl font-black font-outfit">Sales Performance</h3>
-                    <p className="text-muted-foreground font-medium italic underline decoration-primary/10 underline-offset-4">Comprehensive sales reports and analytics coming soon.</p>
                 </Card>
-                <Card className="border-none shadow-xl glass-morphism p-8 min-h-[400px] flex flex-col items-center justify-center text-center space-y-4">
-                    <div className="bg-primary/5 rounded-full p-12">
-                        <Users className="h-24 w-24 text-primary/20" />
+
+                <Card className="border-none shadow-xl glass-morphism p-8 min-h-[400px] flex flex-col space-y-6">
+                    <h3 className="text-2xl font-black font-outfit uppercase tracking-tight">Top Sellers</h3>
+                    <div className="space-y-6">
+                        {report.topSellingBooks.map((book) => (
+                            <div key={book.bookId} className="flex items-center justify-between group">
+                                <div className="space-y-1">
+                                    <p className="font-black text-sm group-hover:text-primary transition-colors">{book.title}</p>
+                                    <p className="text-xs text-muted-foreground font-bold italic">{book.author}</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="font-black text-primary text-sm">{book.unitsSold} sold</p>
+                                    <p className="text-[10px] font-bold text-muted-foreground uppercase opacity-50 tracking-tighter">${book.totalRevenue.toLocaleString()}</p>
+                                </div>
+                            </div>
+                        ))}
                     </div>
-                    <h3 className="text-2xl font-black font-outfit">Audience Retention</h3>
-                    <p className="text-muted-foreground font-medium italic underline decoration-primary/10 underline-offset-4">In-depth user behavior insights will be available in the next release.</p>
                 </Card>
             </div>
         </div>

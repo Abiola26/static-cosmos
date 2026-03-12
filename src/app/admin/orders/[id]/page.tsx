@@ -4,9 +4,17 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { ordersApi } from "@/features/orders/orders-api";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { 
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger,
+    DialogClose,
+} from "@/components/ui/dialog";
 import { 
     Printer, 
     ArrowLeft, 
@@ -19,12 +27,17 @@ import {
     Calendar,
     Hash,
     UserCircle,
-    ShoppingBag
+    ShoppingBag,
+    Database,
+    Fingerprint,
+    Boxes,
+    Trash2,
+    Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { formatPrice, cn } from "@/lib/utils";
 import Link from "next/link";
-import { useRef } from "react";
+import { useState, useRef } from "react";
 
 export default function AdminOrderDetailsPage() {
     const params = useParams();
@@ -46,32 +59,23 @@ export default function AdminOrderDetailsPage() {
         onError: () => toast.error("Failed to update status."),
     });
 
+    const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+
+    const deleteMutation = useMutation({
+        mutationFn: () => ordersApi.deleteOrder(id),
+        onSuccess: () => {
+            toast.success("Order deleted successfully.");
+            router.push("/admin/orders");
+        },
+        onError: (err: any) => {
+            toast.error(err.response?.data?.message || "Error deleting order.");
+        }
+    });
+
     const order = response?.data;
 
     const handlePrint = () => {
         window.print();
-    };
-
-    const getStatusIcon = (status: string) => {
-        switch (status.toLowerCase()) {
-            case "completed": return <CheckCircle2 className="h-5 w-5 text-green-500" />;
-            case "paid": return <CheckCircle2 className="h-5 w-5 text-emerald-500" />;
-            case "shipped": return <Truck className="h-5 w-5 text-blue-500" />;
-            case "pending": return <Clock className="h-5 w-5 text-amber-500" />;
-            case "cancelled": return <XCircle className="h-5 w-5 text-destructive" />;
-            default: return null;
-        }
-    };
-
-    const getStatusBadgeClass = (status: string) => {
-        switch (status.toLowerCase()) {
-            case "completed": return "bg-green-500/10 text-green-600 border-green-200";
-            case "paid": return "bg-emerald-500/10 text-emerald-600 border-emerald-200";
-            case "shipped": return "bg-blue-500/10 text-blue-600 border-blue-200";
-            case "pending": return "bg-amber-500/10 text-amber-600 border-amber-200";
-            case "cancelled": return "bg-destructive/10 text-destructive border-destructive-200";
-            default: return "bg-muted text-muted-foreground";
-        }
     };
 
     if (isLoading) {
@@ -120,12 +124,20 @@ export default function AdminOrderDetailsPage() {
                 </div>
                 <div className="flex gap-4">
                     <Button 
+                        variant="destructive" 
+                        onClick={() => setIsDeleteDialogOpen(true)}
+                        className="rounded-full h-14 px-8 gap-3 font-black uppercase tracking-widest border-2 hover:scale-105 transition-all shadow-xl"
+                    >
+                        <Trash2 className="h-5 w-5" />
+                        Delete Order
+                    </Button>
+                    <Button 
                         variant="outline" 
                         onClick={handlePrint}
                         className="rounded-full h-14 px-8 gap-3 font-black uppercase tracking-widest border-2 hover:scale-105 transition-all shadow-xl"
                     >
                         <Printer className="h-5 w-5" />
-                        Print Detail
+                        Print Invoice
                     </Button>
                 </div>
             </div>
@@ -157,14 +169,14 @@ export default function AdminOrderDetailsPage() {
                             </div>
                             
                             <div className="grid grid-cols-2 gap-x-12 gap-y-6 text-sm">
-                                <div className="space-y-1">
+                                <div className="space-y-1 text-right sm:text-left">
                                     <p className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Date Issued</p>
                                     <p className="flex items-center gap-2 font-black uppercase tracking-tight">
                                         <Calendar className="h-4 w-4 text-primary" />
                                         {format(new Date(order.createdAt), "MMM dd, yyyy")}
                                     </p>
                                 </div>
-                                <div className="space-y-1">
+                                <div className="space-y-1 text-right sm:text-left">
                                     <p className="text-[10px] font-black uppercase text-muted-foreground/60 tracking-widest">Payment Method</p>
                                     <p className="flex items-center gap-2 font-black uppercase tracking-tight">
                                         <CreditCard className="h-4 w-4 text-primary" />
@@ -192,14 +204,14 @@ export default function AdminOrderDetailsPage() {
                             <div className="flex flex-col justify-center items-end text-right">
                                 <p className="text-xs font-black uppercase text-muted-foreground/60 tracking-widest mb-2">Total Amount</p>
                                 <p className="text-7xl md:text-8xl font-black font-outfit tracking-tighter text-primary group-hover:scale-105 transition-transform">
-                                    {formatPrice(order.totalAmount, order.currency)}
+                                    {formatPrice(order.totalAmount + order.shippingFee, order.currency)}
                                 </p>
                             </div>
                         </div>
 
                         {/* Items Breakdown */}
                         <div className="space-y-6">
-                            <h3 className="text-xs font-black uppercase tracking-widest border-l-4 border-primary pl-4 py-1">Order Breakdown</h3>
+                            <h3 className="text-xs font-black uppercase tracking-widest border-l-4 border-primary pl-4 py-1">Order Items</h3>
                             <div className="border border-white/10 rounded-[2.5rem] overflow-hidden shadow-2xl">
                                 <table className="w-full text-left border-collapse">
                                     <thead>
@@ -210,7 +222,7 @@ export default function AdminOrderDetailsPage() {
                                             <th className="px-10 text-[10px] font-black uppercase tracking-[0.2em] text-right">Subtotal</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-white/5">
+                                    <tbody className="divide-y divide-white/5 text-sm">
                                         {order.items.map((item) => (
                                             <tr key={item.id} className="h-24 hover:bg-white/5 transition-all">
                                                 <td className="px-10">
@@ -296,9 +308,9 @@ export default function AdminOrderDetailsPage() {
                         <header className="space-y-1">
                             <h3 className="text-xs font-black uppercase tracking-widest text-primary flex items-center gap-2">
                                 <UserCircle className="h-5 w-5" />
-                                Customer Data
+                                Customer Details
                             </h3>
-                            <p className="text-sm font-bold text-muted-foreground">Account and security info.</p>
+                            <p className="text-sm font-bold text-muted-foreground">Account information.</p>
                         </header>
 
                         <div className="space-y-4">
@@ -306,10 +318,7 @@ export default function AdminOrderDetailsPage() {
                                <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">Full Name</p>
                                <p className="font-black uppercase font-outfit text-xl">{order.userFullName}</p>
                            </div>
-                           <div className="space-y-1">
-                               <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">User ID</p>
-                               <p className="text-xs font-mono bg-white/5 p-3 rounded-xl border border-white/10 text-muted-foreground truncate">{order.userId}</p>
-                           </div>
+
                         </div>
                     </div>
                 </div>
@@ -344,6 +353,50 @@ export default function AdminOrderDetailsPage() {
                     }
                 }
             `}</style>
+            {/* Delete Confirmation Dialog */}
+            <Dialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+                <DialogContent className="sm:max-w-[500px] glass-morphism border-white/10 p-0 overflow-hidden text-white">
+                    <div className="p-8 space-y-8">
+                        <DialogHeader>
+                            <DialogTitle className="text-4xl font-black font-outfit uppercase tracking-tighter text-destructive">Delete Order</DialogTitle>
+                            <DialogDescription asChild className="space-y-4 text-left">
+                                <div className="text-muted-foreground">
+                                    <p className="text-lg font-medium">Are you sure you want to permanently delete this order?</p>
+                                    <div className="p-6 bg-destructive/10 border border-destructive/20 rounded-3xl mt-3">
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-destructive/60">Order ID</p>
+                                                <p className="font-black font-outfit text-xl uppercase tracking-tight text-destructive">ORD-{order?.id.slice(0, 8).toUpperCase()}</p>
+                                            </div>
+                                            <div className="text-right">
+                                                <p className="text-[10px] font-black uppercase tracking-widest text-destructive/60">Customer</p>
+                                                <p className="font-black font-outfit text-xl uppercase tracking-tight text-destructive">{order?.userFullName}</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <p className="text-sm italic mt-3">This action is irreversible and will remove the order data from the system.</p>
+                                </div>
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="flex gap-4 pt-4 border-t border-white/10">
+                            <Button
+                                variant="outline"
+                                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest"
+                                onClick={() => setIsDeleteDialogOpen(false)}
+                            >
+                                CANCEL
+                            </Button>
+                            <Button
+                                className="flex-1 h-14 rounded-2xl font-black uppercase tracking-widest bg-destructive hover:bg-destructive/90 text-white shadow-lg shadow-destructive/20"
+                                onClick={() => deleteMutation.mutate()}
+                                disabled={deleteMutation.isPending}
+                            >
+                                {deleteMutation.isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "DELETE NOW"}
+                            </Button>
+                        </div>
+                    </div>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }

@@ -62,7 +62,7 @@ export function BookForm({ book, onSuccess }: BookFormProps) {
     });
 
     const form = useForm<BookFormValues>({
-        resolver: zodResolver(bookSchema),
+        resolver: zodResolver(bookSchema) as any,
         defaultValues: {
             title: book?.title || "",
             author: book?.author || "",

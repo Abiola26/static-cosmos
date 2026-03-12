@@ -169,7 +169,7 @@ export default function AdminUsersPage() {
                                         </div>
                                         <div>
                                             <p className="font-black font-outfit uppercase tracking-tight">{user.fullName}</p>
-                                            <p className="text-[10px] font-bold text-muted-foreground/60 tracking-widest uppercase">{user.id}</p>
+
                                         </div>
                                     </div>
                                 </TableCell>

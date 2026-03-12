@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
     LayoutDashboard,
+    BarChart3,
     BookOpen,
     Tags,
     Users,
@@ -20,6 +21,7 @@ import { useState } from "react";
 
 const sidebarLinks = [
     { href: "/admin", label: "Dashboard", icon: LayoutDashboard },
+    { href: "/admin/reports", label: "Reports", icon: BarChart3 },
     { href: "/admin/books", label: "Books", icon: BookOpen },
     { href: "/admin/categories", label: "Categories", icon: Tags },
     { href: "/admin/authors", label: "Authors", icon: PenLine },

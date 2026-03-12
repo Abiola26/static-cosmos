@@ -40,4 +40,9 @@ export const ordersApi = {
         );
         return response.data;
     },
+
+    deleteOrder: async (id: string) => {
+        const response = await api.delete<ApiResponse<void>>(`/orders/${id}`);
+        return response.data;
+    },
 };

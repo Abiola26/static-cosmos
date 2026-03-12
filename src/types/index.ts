@@ -224,3 +224,101 @@ export interface OrderCreateDto {
 export interface OrderUpdateStatusDto {
     status: string;
 }
+
+/**
+ * Report Types
+ */
+export interface SalesSummaryDto {
+    orderId: string;
+    customerName: string;
+    amount: number;
+    status: string;
+    date: string;
+}
+
+export interface TopBookDto {
+    bookId: string;
+    title: string;
+    author: string;
+    unitsSold: number;
+    totalRevenue: number;
+}
+
+export interface MonthlySalesDto {
+    month: string;
+    revenue: number;
+    orderCount: number;
+}
+
+export interface CategorySalesDto {
+    categoryName: string;
+    revenue: number;
+    unitsSold: number;
+}
+
+export interface DashboardReportDto {
+    totalOrders: number;
+    totalBooks: number;
+    totalUsers: number;
+    totalRevenue: number;
+    recentSales: SalesSummaryDto[];
+    topSellingBooks: TopBookDto[];
+    monthlySales: MonthlySalesDto[];
+    salesByCategory: CategorySalesDto[];
+}
+
+export interface LowStockBookDto {
+    bookId: string;
+    title: string;
+    currentStock: number;
+}
+
+export interface CategoryStockDto {
+    categoryName: string;
+    bookCount: number;
+    totalStock: number;
+}
+
+export interface InventoryReportDto {
+    totalStock: number;
+    lowStockBooks: LowStockBookDto[];
+    stockByCategory: CategoryStockDto[];
+}
+
+export interface TopCustomerDto {
+    userId: string;
+    fullName: string;
+    totalOrders: number;
+    totalSpent: number;
+}
+
+export interface UserGrowthDto {
+    month: string;
+    newUsers: number;
+}
+
+export interface UserEngagementReportDto {
+    totalRegisteredUsers: number;
+    activeUsersLast30Days: number;
+    topCustomers: TopCustomerDto[];
+    userGrowth: UserGrowthDto[];
+}
+
+export interface RatingCountDto {
+    rating: number;
+    count: number;
+}
+
+export interface TopRatedBookDto {
+    bookId: string;
+    title: string;
+    averageRating: number;
+    reviewCount: number;
+}
+
+export interface ReviewAnalyticsReportDto {
+    averageRating: number;
+    totalReviews: number;
+    ratingDistribution: RatingCountDto[];
+    topRatedBooks: TopRatedBookDto[];
+}
