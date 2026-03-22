@@ -1,5 +1,5 @@
 import api from "@/lib/api";
-import { ApiResponse, OrderResponseDto, OrderCreateDto, PagedResult } from "@/types";
+import { ApiResponse, OrderResponseDto, OrderCreateDto, PagedResult, OrderConfigurationResponseDto } from "@/types";
 
 export const ordersApi = {
     createOrder: async (order: OrderCreateDto) => {
@@ -43,6 +43,16 @@ export const ordersApi = {
 
     deleteOrder: async (id: string) => {
         const response = await api.delete<ApiResponse<void>>(`/orders/${id}`);
+        return response.data;
+    },
+
+    cancelOrder: async (id: string) => {
+        const response = await api.delete<ApiResponse<void>>(`/orders/${id}/cancel`);
+        return response.data;
+    },
+
+    getOrderConfiguration: async () => {
+        const response = await api.get<ApiResponse<OrderConfigurationResponseDto>>("/orders/configuration");
         return response.data;
     },
 };

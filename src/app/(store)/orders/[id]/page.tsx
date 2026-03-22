@@ -1,14 +1,17 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useParams, useRouter } from "next/navigation";
 import { ordersApi } from "@/features/orders/orders-api";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { toast } from "sonner";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import { 
     Printer, 
-    Download, 
+    Download,
     ArrowLeft, 
     CheckCircle2, 
     Clock, 
@@ -18,28 +21,105 @@ import {
     MapPin,
     Calendar,
     Hash,
-    ShoppingBag
+    ShoppingBag,
+    ShieldCheck,
+    Loader2
 } from "lucide-react";
 import { format } from "date-fns";
 import { formatPrice } from "@/lib/utils";
 import Link from "next/link";
-import { useRef } from "react";
+import { useState, useRef } from "react";
 
 export default function OrderDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const id = params.id as string;
     const invoiceRef = useRef<HTMLDivElement>(null);
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    const queryClient = useQueryClient();
 
     const { data: response, isLoading, error } = useQuery({
         queryKey: ["order", id],
         queryFn: () => ordersApi.getOrderById(id),
     });
 
+    const cancelMutation = useMutation({
+        mutationFn: () => ordersApi.cancelOrder(id),
+        onSuccess: () => {
+            toast.success("Order cancelled successfully");
+            queryClient.invalidateQueries({ queryKey: ["order", id] });
+            queryClient.invalidateQueries({ queryKey: ["orders"] });
+        },
+        onError: (err: any) => {
+            const message = err.response?.data?.message || "Failed to cancel order";
+            toast.error(message);
+        }
+    });
+
     const order = response?.data;
 
     const handlePrint = () => {
         window.print();
+    };
+
+    const handleDownloadPDF = async () => {
+        if (!invoiceRef.current || !order) return;
+        
+        setIsDownloading(true);
+        const toastId = toast.loading("Generating your PDF...");
+        
+        try {
+            const element = invoiceRef.current;
+            // Temporarily hide elements that shouldn't be in the PDF if they aren't already hidden by print styles
+            // html2canvas doesn't respect @media print by default
+            
+            const canvas = await html2canvas(element, {
+                scale: 2, // Higher quality
+                useCORS: true,
+                logging: false,
+                backgroundColor: "#ffffff",
+                windowWidth: 1200 // Ensure consistent width for capture
+            });
+            
+            const imgData = canvas.toDataURL("image/png");
+            const pdf = new jsPDF({
+                orientation: "portrait",
+                unit: "mm",
+                format: "a4"
+            });
+            
+            const imgWidth = 210; // A4 width in mm
+            const pageHeight = 297; // A4 height in mm
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            
+            let heightLeft = imgHeight;
+            let position = 0;
+
+            pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+            heightLeft -= pageHeight;
+
+            while (heightLeft >= 0) {
+                position = heightLeft - imgHeight;
+                pdf.addPage();
+                pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+                heightLeft -= pageHeight;
+            }
+            
+            pdf.save(`Invoice-ORD-${order.id.slice(0, 8)}.pdf`);
+            toast.success("Invoice downloaded!", { id: toastId });
+        } catch (err) {
+            console.error("PDF Generation error:", err);
+            toast.error("Failed to generate PDF. Please try printing instead.", { id: toastId });
+        } finally {
+            setIsDownloading(false);
+        }
+    };
+
+    const handleCancel = () => {
+        if (confirm("Are you sure you want to cancel this order?")) {
+            cancelMutation.mutate();
+        }
     };
 
     const getStatusIcon = (status: string) => {
@@ -99,6 +179,26 @@ export default function OrderDetailsPage() {
                     Back to Orders
                 </Button>
                 <div className="flex gap-3">
+                    {order?.status?.toLowerCase() === "pending" && (
+                        <Button
+                            variant="destructive"
+                            onClick={handleCancel}
+                            disabled={cancelMutation.isPending}
+                            className="rounded-full gap-2 font-bold"
+                        >
+                            <XCircle className="h-4 w-4" />
+                            {cancelMutation.isPending ? "Cancelling..." : "Cancel Order"}
+                        </Button>
+                    )}
+                    <Button 
+                        variant="outline" 
+                        onClick={handleDownloadPDF}
+                        disabled={isDownloading}
+                        className="rounded-full gap-2 font-bold border-2"
+                    >
+                        {isDownloading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Download className="h-4 w-4" />}
+                        {isDownloading ? "Generating..." : "Download PDF"}
+                    </Button>
                     <Button 
                         variant="outline" 
                         onClick={handlePrint}
@@ -237,9 +337,13 @@ export default function OrderDetailsPage() {
                     <p className="text-sm font-medium text-muted-foreground italic print:text-[10px]">
                         Thank you for your purchase from BookStore! If you have any questions, please contact our support team.
                     </p>
-                    <div className="flex items-center justify-center gap-8 py-6 rounded-2xl bg-black/5 opacity-50 grayscale print:hidden">
-                        <img src="/paystack-logo.png" className="h-4 object-contain" alt="Paystack" />
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em]">Secure Transaction</span>
+                    <div className="flex items-center justify-center gap-8 py-6 rounded-2xl bg-black/5 opacity-80 border-2 border-dashed border-black/5 print:hidden">
+                        <div className="flex items-center gap-2">
+                            <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                            <span className="text-[10px] font-black uppercase tracking-[0.3em]">Secure Transaction</span>
+                        </div>
+                        <div className="h-4 w-px bg-black/10" />
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] opacity-50">Powered by Paystack</span>
                     </div>
                 </div>
             </div>

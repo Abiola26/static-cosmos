@@ -225,6 +225,11 @@ export interface OrderUpdateStatusDto {
     status: string;
 }
 
+export interface OrderConfigurationResponseDto {
+    shippingFee: number;
+    currency: string;
+}
+
 /**
  * Report Types
  */

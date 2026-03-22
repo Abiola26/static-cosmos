@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useCartStore } from "@/store/cartStore";
 import { useRouter } from "next/navigation";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { ordersApi } from "@/features/orders/orders-api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -23,8 +23,13 @@ export default function CheckoutPage() {
     const [paymentMethod, setPaymentMethod] = useState<"CashOnDelivery" | "OnlinePayment">("CashOnDelivery");
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
 
+    const { data: configResponse, isLoading: isConfigLoading } = useQuery({
+        queryKey: ["orderConfiguration"],
+        queryFn: () => ordersApi.getOrderConfiguration(),
+    });
+
+    const shippingFee = configResponse?.data?.shippingFee ?? 5.00;
     const total = totalPrice();
-    const shippingFee = 5.00; // Flat fee from backend
     const grandTotal = total + shippingFee;
 
     const mutation = useMutation({
@@ -288,9 +293,9 @@ export default function CheckoutPage() {
                             type="button"
                             className="w-full h-20 rounded-full text-xl font-black bg-primary hover:bg-primary/90 shadow-[0_15px_30px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_20px_40px_rgba(var(--primary-rgb),0.4)] transition-all active:scale-95 group"
                             onClick={handlePlaceOrder}
-                            disabled={mutation.isPending || isProcessingPayment}
+                            disabled={mutation.isPending || isProcessingPayment || isConfigLoading}
                         >
-                            {mutation.isPending || isProcessingPayment ? (
+                            {mutation.isPending || isProcessingPayment || isConfigLoading ? (
                                 <Loader2 className="mr-2 h-6 w-6 animate-spin" />
                             ) : (
                                 <>
