@@ -8,11 +8,11 @@ import {
     TrendingUp,
     ArrowUpRight,
     ArrowDownRight,
-    Loader2
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { reportService } from "@/lib/api-reports";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function AdminDashboard() {
     const { data: dashboardData, isLoading, error } = useQuery({
@@ -22,8 +22,54 @@ export default function AdminDashboard() {
 
     if (isLoading) {
         return (
-            <div className="flex items-center justify-center min-h-[400px]">
-                <Loader2 className="h-12 w-12 text-primary animate-spin" />
+            <div className="space-y-12 animate-pulse">
+                <header className="space-y-2 border-b-4 border-muted pb-8">
+                    <Skeleton className="h-16 w-1/4 mb-2" />
+                    <Skeleton className="h-6 w-1/3" />
+                </header>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <Card key={i} className="border-none shadow-xl glass-morphism p-6 space-y-4">
+                            <div className="flex justify-between items-center">
+                                <Skeleton className="h-4 w-20" />
+                                <Skeleton className="h-8 w-8 rounded-lg" />
+                            </div>
+                            <Skeleton className="h-10 w-32" />
+                            <Skeleton className="h-4 w-24 rounded-full" />
+                        </Card>
+                    ))}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    <Card className="lg:col-span-2 border-none shadow-xl glass-morphism p-8 space-y-6">
+                        <Skeleton className="h-8 w-40" />
+                        <div className="space-y-4">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                                <div key={i} className="flex gap-4 py-4 border-b border-muted/20">
+                                    <Skeleton className="h-4 flex-1" />
+                                    <Skeleton className="h-4 w-20" />
+                                    <Skeleton className="h-4 w-16" />
+                                    <Skeleton className="h-4 w-24" />
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                    <Card className="border-none shadow-xl glass-morphism p-8 space-y-6">
+                        <Skeleton className="h-8 w-40" />
+                        <div className="space-y-6">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="flex justify-between items-center">
+                                    <div className="space-y-2">
+                                        <Skeleton className="h-4 w-32" />
+                                        <Skeleton className="h-3 w-20" />
+                                    </div>
+                                    <Skeleton className="h-8 w-16" />
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                </div>
             </div>
         );
     }

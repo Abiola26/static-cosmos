@@ -36,14 +36,33 @@ export default function OrdersPage() {
 
     if (isLoading) {
         return (
-            <div className="container mx-auto px-4 py-12 space-y-8 max-w-5xl">
+            <div className="container mx-auto px-4 py-12 max-w-5xl space-y-12 animate-pulse">
                 <header className="space-y-2 border-b-4 border-primary pb-8">
-                    <Skeleton className="h-16 w-1/2" />
+                    <Skeleton className="h-16 w-3/4 md:w-1/2 mb-2" />
                     <Skeleton className="h-6 w-1/3" />
                 </header>
-                <div className="space-y-4">
+                <div className="space-y-6">
                     {[1, 2, 3].map((i) => (
-                        <Skeleton key={i} className="h-32 w-full rounded-3xl" />
+                        <div key={i} className="bg-card/50 glass-morphism p-8 rounded-[2.5rem] border border-white/10 flex flex-col md:flex-row items-center justify-between gap-8 border-l-8 border-l-primary/20">
+                            <div className="flex flex-col sm:flex-row gap-8 items-center w-full">
+                                <Skeleton className="h-20 w-20 rounded-2xl shrink-0" />
+                                <div className="space-y-3 w-full max-w-xs">
+                                    <Skeleton className="h-3 w-20" />
+                                    <Skeleton className="h-6 w-full" />
+                                    <div className="flex gap-4">
+                                        <Skeleton className="h-4 w-24" />
+                                        <Skeleton className="h-6 w-20 rounded-full" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-12 justify-between w-full md:w-auto border-t md:border-t-0 pt-6 md:pt-0 border-white/10">
+                                <div className="space-y-2 text-center md:text-right">
+                                    <Skeleton className="h-3 w-20 ml-auto" />
+                                    <Skeleton className="h-8 w-32" />
+                                </div>
+                                <Skeleton className="h-14 w-14 rounded-2xl" />
+                            </div>
+                        </div>
                     ))}
                 </div>
             </div>

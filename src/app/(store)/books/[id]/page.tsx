@@ -40,16 +40,45 @@ export default function BookDetailPage() {
 
     if (isLoading) {
         return (
-            <div className="container mx-auto px-4 py-8 space-y-8 animate-pulse">
-                <div className="flex flex-col lg:flex-row gap-12">
-                    <Skeleton className="w-full lg:w-[450px] aspect-[3/4] rounded-2xl" />
-                    <div className="flex-1 space-y-6">
-                        <Skeleton className="h-12 w-3/4" />
-                        <Skeleton className="h-6 w-1/4" />
-                        <Skeleton className="h-32 w-full rounded-2xl" />
-                        <div className="flex gap-4">
-                            <Skeleton className="h-16 w-full rounded-full" />
-                            <Skeleton className="h-16 w-16 rounded-full" />
+            <div className="container mx-auto px-4 py-8 max-w-7xl animate-pulse">
+                <Skeleton className="h-10 w-24 rounded-full mb-8" />
+                <div className="flex flex-col lg:flex-row gap-12 items-start mb-24">
+                    <div className="w-full lg:w-[450px]">
+                        <Skeleton className="aspect-[3/4] rounded-3xl w-full" />
+                    </div>
+                    <div className="flex-1 space-y-10 w-full">
+                        <div className="space-y-4">
+                            <Skeleton className="h-6 w-24 rounded-full" />
+                            <Skeleton className="h-16 md:h-20 w-full rounded-xl" />
+                            <div className="flex gap-6">
+                                <Skeleton className="h-8 w-40 rounded-full" />
+                                <Skeleton className="h-8 w-32 rounded-full" />
+                            </div>
+                        </div>
+                        <div className="flex gap-4 items-baseline">
+                            <Skeleton className="h-16 w-32 rounded-xl" />
+                            <Skeleton className="h-8 w-24 rounded-xl" />
+                        </div>
+                        <div className="space-y-4">
+                            <Skeleton className="h-4 w-24" />
+                            <div className="space-y-2">
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-full" />
+                                <Skeleton className="h-4 w-2/3" />
+                            </div>
+                        </div>
+                        <div className="grid grid-cols-2 sm:grid-cols-4 gap-8 py-10 border-y border-muted-foreground/10">
+                            {Array.from({ length: 4 }).map((_, i) => (
+                                <div key={i} className="space-y-2">
+                                    <Skeleton className="h-3 w-12" />
+                                    <Skeleton className="h-5 w-20" />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-4 pt-4">
+                            <Skeleton className="flex-1 h-20 rounded-full" />
+                            <Skeleton className="h-20 w-full sm:w-20 rounded-full" />
+                            <Skeleton className="h-20 w-full sm:w-20 rounded-full" />
                         </div>
                     </div>
                 </div>
