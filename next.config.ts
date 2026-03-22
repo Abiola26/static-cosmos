@@ -6,6 +6,11 @@ const nextConfig: NextConfig = {
     unoptimized: true,
     remotePatterns: [
       {
+        protocol: 'https',
+        hostname: 'bookstore-pepc.onrender.com',
+        pathname: '/uploads/**',
+      },
+      {
         protocol: 'http',
         hostname: 'localhost',
         port: '5085',
